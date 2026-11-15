@@ -71,7 +71,7 @@ The project name lives in one place: `app/src/config.ts`. All UI copy is in `app
 
 ## Deploy
 
-The site is fully static (`app/dist`, relative paths) and is published from the `gh-pages` branch with GitHub Pages.
+The site is fully static (`app/dist`, relative paths). GitHub Pages currently serves the repository root of `main`, so the built site (`index.html`, `assets/`, `data/`, `favicon.svg`) is committed there; after `npm run build`, copy `app/dist/*` to the root. The same build is also on the `gh-pages` branch: if Pages is switched to that branch, the root copies can be removed.
 
 Custom domain (GoDaddy or any registrar): in the repository go to *Settings → Pages → Custom domain* and enter the domain; at the registrar add a `CNAME` record for `www` pointing to `pauxan707.github.io`, and for the apex domain four `A` records to `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`. Then tick *Enforce HTTPS*.
 
