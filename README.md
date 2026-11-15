@@ -4,7 +4,7 @@
 
 NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS Hot Spots* · Team **EmberCast** (Montevideo, Uruguay)
 
-**Live demo:** https://pauxan707.github.io/EmberCast-NASA-Space-Apps/
+**Live demo:** https://embercast.earth (same site: https://pauxan707.github.io/EmberCast-NASA-Space-Apps/)
 
 MODIS and VIIRS have tracked active fires for more than two decades, but their records cannot be compared directly. EmberCast harmonizes them into one burn-activity calendar and, on top of that record, delivers a risk report per zone: already interpreted, always verifiable.
 
