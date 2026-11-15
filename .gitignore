@@ -1,0 +1,14 @@
+# local-only material (course documents, raw downloads, work files)
+*.pdf
+*.pptx
+*.mhtml
+BRIEF_DEMO.md
+.claude/
+pipeline/data_raw/
+pipeline/work/
+pipeline/02_power.py
+pipeline/04_model.py
+node_modules/
+dist/
+*.tsbuildinfo
+__pycache__/
