@@ -56,17 +56,48 @@ export default function Globe() {
         for (let lon = -180; lon <= 180; lon += 5) { const [x, y, v] = proj(lon, lat, l0); if (v > 0) { if (pen) g.lineTo(x, y); else g.moveTo(x, y); pen = true } else pen = false }
         g.stroke()
       }
-      // land
+      // land: polygons crossing the horizon are cut there and closed along the rim
       g.fillStyle = '#3a322a'; g.strokeStyle = 'rgba(242,237,227,.22)'; g.lineWidth = 0.7
-      for (const ring of meta.land) {
-        let any = false
+      const sx = (u: number) => cx + R * u, sy = (u: number) => cy - R * u
+      const raw = (lon: number, lat: number): [number, number, number] => {
+        const l = (lon - l0) * RAD, p = lat * RAD, cp = Math.cos(p), sp = Math.sin(p), cl = Math.cos(l)
+        return [cp * Math.sin(l), cos0 * sp - sin0 * cp * cl, sin0 * sp + cos0 * cp * cl]
+      }
+      const cross = (h: number[], q: number[]) => {
+        const k = q[2] / (q[2] - h[2]), x = q[0] + (h[0] - q[0]) * k, y = q[1] + (h[1] - q[1]) * k, m = Math.hypot(x, y) || 1
+        return [x / m, y / m]
+      }
+      const drawRun = (run: number[][]) => {
+        if (run.length < 3) return
+        const a = run[run.length - 1], b = run[0]
+        const a0 = Math.atan2(-a[1], a[0]), a1 = Math.atan2(-b[1], b[0])
+        let d = a1 - a0
+        while (d > Math.PI) d -= 2 * Math.PI
+        while (d <= -Math.PI) d += 2 * Math.PI
         g.beginPath()
-        for (let i = 0; i < ring.length; i++) {
-          const [x, y, v] = proj(ring[i][0], ring[i][1], l0)
-          if (v > 0) any = true
-          if (i) g.lineTo(x, y); else g.moveTo(x, y)
+        run.forEach((q, i) => (i ? g.lineTo(sx(q[0]), sy(q[1])) : g.moveTo(sx(q[0]), sy(q[1]))))
+        g.arc(cx, cy, R, a0, a1, d < 0)
+        g.closePath(); g.fill()
+        g.beginPath()
+        run.forEach((q, i) => (i ? g.lineTo(sx(q[0]), sy(q[1])) : g.moveTo(sx(q[0]), sy(q[1]))))
+        g.stroke()
+      }
+      for (const ring of meta.land) {
+        const pts = ring.map((q) => raw(q[0], q[1]))
+        const n = pts.length
+        const start = pts.findIndex((q) => q[2] <= 0)
+        if (start < 0) {
+          g.beginPath()
+          pts.forEach((q, i) => (i ? g.lineTo(sx(q[0]), sy(q[1])) : g.moveTo(sx(q[0]), sy(q[1]))))
+          g.closePath(); g.fill(); g.stroke()
+          continue
         }
-        if (any) { g.closePath(); g.fill(); g.stroke() }
+        let run: number[][] = []
+        for (let k = 1; k <= n; k++) {
+          const a = pts[(start + k - 1) % n], q = pts[(start + k) % n]
+          if (q[2] > 0) { if (a[2] <= 0) run = [cross(a, q)]; run.push([q[0], q[1]]) }
+          else if (a[2] > 0) { run.push(cross(q, a)); drawRun(run); run = [] }
+        }
       }
       // fires
       g.globalCompositeOperation = 'lighter'
