@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { activityRatio, isoOf } from '../data'
 import type { Key } from '../i18n'
-import { Card, fmtDate, fmtNum, Illus, Legend, LEVELS, ramp, RiskBadge, RiskLegend, SENSOR, Tag, useApp, UyMap } from '../ui'
-import { reasonText } from './Home'
+import { reasonText } from '../reason'
+import { Card, fmtDate, fmtNum, Illus, Legend, LEVELS, rampLight, RiskBadge, RiskLegend, SENSOR, Tag, useApp, UyMap } from '../ui'
 
 type Base = 'risk' | 'activity'
 export default function MapPage({ zone }: { zone?: string }) {
@@ -36,7 +36,7 @@ export default function MapPage({ zone }: { zone?: string }) {
       act, maxAct: Math.max(...act, 1),
       ptsM: mk(db.recent.modis, wk.t - 30, wk.t, SENSOR.modis),
       ptsV: mk(db.recent.viirs, wk.t - 30, wk.t, SENSOR.viirs),
-      ptsNext: mk(db.recent.viirs, wk.t, wk.t + 7, '#ffffff', true),
+      ptsNext: mk(db.recent.viirs, wk.t, wk.t + 7, '#17130f', true),
     }
   }, [db, wk, cellKey, g])
 
@@ -62,11 +62,11 @@ export default function MapPage({ zone }: { zone?: string }) {
             selected={sel >= 0 ? [sel] : []}
             onPick={(i) => { setSel(i); setCell(-1) }}
             onCell={(i) => { setCell(i); setSel(db.model.cells[i].d) }}
-            cellFill={(i) => (base === 'risk' ? LEVELS[+wk.levels[i]].color + 'b8' : act[i] ? ramp(Math.sqrt(act[i] / maxAct)) : '#131a22')}
+            cellFill={(i) => (base === 'risk' ? LEVELS[+wk.levels[i]].color : act[i] ? rampLight(Math.sqrt(act[i] / maxAct)) : null)}
             points={points}
           />
           {base === 'risk' ? <RiskLegend /> : (
-            <div className="legend"><span>{t('less')}</span><span className="rampbar" style={{ background: `linear-gradient(90deg,${[0.05, 0.25, 0.5, 0.75, 1].map(ramp).join(',')})` }} /><span>{t('more')}</span></div>
+            <div className="legend"><span>{t('less')}</span><span className="rampbar" style={{ background: `linear-gradient(90deg,${[0.05, 0.25, 0.5, 0.75, 1].map(rampLight).join(',')})` }} /><span>{t('more')}</span></div>
           )}
         </Card>
         <div className="map-side">
@@ -81,7 +81,7 @@ export default function MapPage({ zone }: { zone?: string }) {
             <p className="note">{t('never_sum')}</p>
             <button className={'primary wide' + (reveal ? ' on' : '')} onClick={() => setReveal(!reveal)}>{reveal ? t('hide_next') : t('reveal_next')}</button>
             {reveal && (
-              <div className="note"><Legend items={[{ color: '#fff', label: t('next_legend'), shape: 'ring' }]} />
+              <div className="note"><Legend items={[{ color: '#17130f', label: t('next_legend'), shape: 'ring' }]} />
                 <p>{t('reveal_txt', { n: hitCells, high: hitHigh, from: isoOf(wk.t), to: isoOf(wk.t + 6) })}</p></div>
             )}
           </Card>

@@ -5,7 +5,7 @@ import { Card, fmtDate, Illus, LEVELS, RiskBadge, RiskGlyph, RiskLegend, Tag, us
 
 type Act = 'trip' | 'event' | 'operation' | 'burn'
 const ACTS: { id: Act; icon: string; tol: number }[] = [
-  { id: 'trip', icon: '🧭', tol: 1 }, { id: 'event', icon: '⛺', tol: 1 }, { id: 'operation', icon: '🏭', tol: 1 }, { id: 'burn', icon: '🔥', tol: 0 },
+  { id: 'trip', icon: 'A', tol: 1 }, { id: 'event', icon: 'B', tol: 1 }, { id: 'operation', icon: 'C', tol: 1 }, { id: 'burn', icon: 'D', tol: 0 },
 ]
 const DAY = 864e5
 interface Stop { d: number; days: number }
@@ -73,7 +73,7 @@ export default function Planner() {
       <div className="map-grid plan">
         <Card className="map-card" title={t('pl_pick')}>
           <UyMap labels onPick={toggle} route={stops.map((s) => s.d)}
-            fill={(i) => LEVELS[zoneLevel(db, week, i, start + Math.floor(total / 2)).level].color + '99'} />
+            fill={(i) => LEVELS[zoneLevel(db, week, i, start + Math.floor(total / 2)).level].color} />
           <RiskLegend />
           <p className="note">{t('pl_map_note', { date: dstr(start + Math.floor(total / 2)) })}</p>
         </Card>
@@ -108,7 +108,7 @@ export default function Planner() {
                 <div className="daystrip">
                   {r.days.map((d) => (
                     <div key={d.off} className={d.src + (d.level > tol ? ' over' : '')} title={t(d.src === 'outlook' ? 'src_outlook' : 'src_seasonal')}>
-                      <RiskGlyph level={d.level} size={20} /><span>{dstr(d.off, { day: 'numeric', month: 'numeric' })}</span>
+                      <i style={{ background: LEVELS[d.level].color, color: LEVELS[d.level].fg }}><RiskGlyph level={d.level} size={18} /></i><span>{dstr(d.off, { day: 'numeric', month: 'numeric' })}</span>
                     </div>
                   ))}
                 </div>

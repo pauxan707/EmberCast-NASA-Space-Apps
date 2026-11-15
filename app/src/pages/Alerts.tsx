@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { PROJECT_NAME } from '../config'
 import { activityRatio, confidence, reasons } from '../data'
 import type { Key } from '../i18n'
+import { reasonText } from '../reason'
 import { Card, fmtDate, fmtNum, LEVELS, RiskBadge, Tag, useApp, UyMap } from '../ui'
-import { reasonText } from './Home'
 
 export default function Alerts() {
   const { db, t, lang, week, myZones, setMyZones } = useApp()
@@ -26,7 +26,7 @@ export default function Alerts() {
       <div className="map-grid">
         <Card title={'1 · ' + t('al_zones')} className="map-card">
           <UyMap labels onPick={(i) => toggle(db.depts[i].id)} selected={db.depts.filter((d) => zones.includes(d.id)).map((d) => d.idx)}
-            fill={(i) => (zones.includes(db.depts[i].id) ? LEVELS[wk.zones[i].level].color + 'aa' : undefined)} />
+            fill={(i) => (zones.includes(db.depts[i].id) ? LEVELS[wk.zones[i].level].color : undefined)} />
           <p className="note">{t('al_zones_d', { n: zones.length })}</p>
         </Card>
         <div className="map-side">

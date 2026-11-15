@@ -1,5 +1,5 @@
 import type { Key } from '../i18n'
-import { Card, fmtNum, Illus, LEVELS, RiskBadge, Tag, useApp } from '../ui'
+import { Card, fmtNum, HowNav, Illus, LEVELS, RiskBadge, Tag, useApp } from '../ui'
 
 const INPUTS: { g: string; src: string; nasa: boolean }[] = [
   { g: 'season', src: 'EmberCast harmonized record (NASA FIRMS: MCD14ML + VNP14IMGT)', nasa: true },
@@ -16,6 +16,7 @@ export default function ModelPage() {
   const gmax = Math.max(...mo.groupImp.map((g) => g.gain))
   return (
     <>
+      <HowNav on="model" />
       <div className="sec-h">
         <div><h2>{t('m_title')}</h2><p>{t('m_sub')}</p></div>
         <Illus />

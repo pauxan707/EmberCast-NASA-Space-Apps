@@ -38,13 +38,13 @@ Known limits: it cannot recover small fires MODIS never saw (it estimates them o
 
 ## What the app does
 
-- **My zones**: reports sorted by risk; the home screen is the answer, not a map.
+- **Landing**: what it is and who it is for (prevent, plan, respond), over the real 25-year burn calendar.
+- **Zones**: reports sorted by risk; the dashboard is the answer, not a map.
 - **Report**: level, why, activity vs 25 years, confidence, what to do, links to evidence.
 - **Map**: risk grid, real MODIS / VIIRS detections, harmonized activity, and a "reveal what happened next" replay.
 - **Burn calendar**: month and day views 2001–2025, anomalies, critical period, CSV download.
 - **Planner**: plan a trip, event, field/industrial work or prescribed burn; get a verdict, safer dates and safer places.
-- **Harmonization**: interactive before/after, a real fire seen by both sensors, validation.
-- **Risk model**: design, inputs and references (illustrative numbers).
+- **How it works**: overview, plus **Harmonization** (interactive before/after, a real fire seen by both sensors, validation) and **Risk model** (design, inputs and references; illustrative numbers).
 - **Alerts**: subscription flow with a sample message.
 - English / Spanish, responsive, guided 1-minute tour.
 
@@ -84,7 +84,7 @@ Custom domain (GoDaddy or any registrar): in the repository go to *Settings → 
 
 **Other**
 - Department boundaries: [geoBoundaries](https://www.geoboundaries.org/) gbOpen URY ADM1 (ODbL, © OpenStreetMap contributors).
-- Fonts: Space Grotesk, Inter, JetBrains Mono (SIL Open Font License), via Google Fonts.
+- Fonts: Fraunces, IBM Plex Sans, IBM Plex Mono (SIL Open Font License), via Google Fonts.
 - Software: React, Vite, TypeScript, Python, NumPy.
 
 ## Use of AI

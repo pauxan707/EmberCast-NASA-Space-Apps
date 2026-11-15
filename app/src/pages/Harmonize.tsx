@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Key } from '../i18n'
-import { Card, fmtDate, fmtNum, Legend, SENSOR, Tag, useApp } from '../ui'
+import { Card, fmtDate, fmtNum, HowNav, Legend, SENSOR, Tag, useApp } from '../ui'
 
 export default function Harmonize() {
   const { db, t, lang } = useApp()
@@ -39,6 +39,7 @@ export default function Harmonize() {
 
   return (
     <>
+      <HowNav on="harmonization" />
       <div className="sec-h">
         <div><h2>{t('h_title')}</h2><p>{t('h_sub')}</p></div>
         <Tag kind="real">{t('real_data')}</Tag>
@@ -67,7 +68,7 @@ export default function Harmonize() {
           <div className="mark-label" style={{ left: `${(11 / 25) * 100}%` }}>{harm ? t('h_no_jump') : t('h_jump')}</div>
         </div>
         {harm
-          ? <Legend items={[{ color: SENSOR.harm, label: t('leg_harm') }, { color: '#fff', label: t('leg_band', { band }) }]} />
+          ? <Legend items={[{ color: SENSOR.harm, label: t('leg_harm') }, { color: '#17130f', label: t('leg_band', { band }) }]} />
           : <Legend items={[{ color: SENSOR.modis, label: t('leg_modis_det') }, { color: SENSOR.viirs, label: t('leg_viirs_det') }]} />}
         <p className="lead small">{harm ? t('h_txt_harm', { k: fmtNum(m.kNat, lang, 2) }) : t('h_txt_raw')}</p>
       </Card>

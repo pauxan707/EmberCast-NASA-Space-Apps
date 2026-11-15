@@ -26,12 +26,12 @@ export default function Calendar({ zone }: { zone?: string }) {
     if (!c || view !== 'daily') return
     c.width = 366 * CW; c.height = years.length * CH
     const g = c.getContext('2d')!
-    g.fillStyle = '#0d1218'; g.fillRect(0, 0, c.width, c.height)
+    g.fillStyle = '#14110f'; g.fillRect(0, 0, c.width, c.height)
     for (let i = 0; i < db.meta.nDays; i++) {
       const r = years.indexOf(db.year[i])
       if (r < 0) continue
       const v = z.h[i]
-      g.fillStyle = v > 0 ? ramp(0.12 + 0.88 * Math.sqrt(Math.min(1, v / vmax))) : blind && z.blind[i] === '1' ? '#33414f' : '#131a22'
+      g.fillStyle = v > 0 ? ramp(0.12 + 0.88 * Math.sqrt(Math.min(1, v / vmax))) : blind && z.blind[i] === '1' ? '#4a4239' : '#1d1915'
       g.fillRect(db.doy[i] * CW, r * CH + 1, CW, CH - 2)
     }
   }, [db, z, view, years, vmax, blind])
@@ -54,7 +54,7 @@ export default function Calendar({ zone }: { zone?: string }) {
   const med = quantile(prev, 0.5)
   const best = totals.indexOf(Math.max(...totals)), calm = totals.indexOf(Math.min(...totals))
   const cmax = Math.max(...clim, 0.001)
-  const era = (y: number) => (y < 2003 ? '#56657a' : y < 2012 ? SENSOR.modis : SENSOR.viirs)
+  const era = (y: number) => (y < 2003 ? '#8f8779' : y < 2012 ? SENSOR.modis : SENSOR.viirs)
   const isAnom = (y: number, m: number) => mat[y][m] > st[m].p90 && mat[y][m] > 1.5 * st[m].median && mat[y][m] >= 5
 
   return (
@@ -86,7 +86,7 @@ export default function Calendar({ zone }: { zone?: string }) {
         <div><span>{t('st_calm')}</span><b>{YEARS[calm]}</b><em>{t('st_peak_d', { n: fmtNum(totals[calm], lang) })}</em></div>
       </div>
 
-      <Card className="cal-card">
+      <Card className="cal-card plate">
         {view === 'monthly' ? (
           <div className="mgrid" role="table">
             <div className="mrow head"><span /><span />{months.map((m) => <b key={m}>{m}</b>)}<b>{t('total')}</b></div>
@@ -94,7 +94,7 @@ export default function Calendar({ zone }: { zone?: string }) {
               <div className="mrow" key={y}>
                 <span className="yr">{y}</span><i className="era" style={{ background: era(y) }} />
                 {mat[y - 2001].map((v, m) => (
-                  <span key={m} className={'mc' + (isAnom(y - 2001, m) ? ' anom' : '')} style={{ background: v > 0 ? ramp(0.1 + 0.9 * Math.sqrt(v / mmax)) : '#131a22', color: v / mmax > 0.35 ? '#111' : '#dfe6ee' }}
+                  <span key={m} className={'mc' + (isAnom(y - 2001, m) ? ' anom' : '')} style={{ background: v > 0 ? ramp(0.1 + 0.9 * Math.sqrt(v / mmax)) : '#1d1915', color: v / mmax > 0.35 ? '#111' : '#efe9dd' }}
                     title={`${months[m]} ${y}: ${fmtNum(v, lang)} · ${t('median')}: ${fmtNum(st[m].median, lang)}`}>{fmtNum(v, lang)}</span>
                 ))}
                 <span className="tot">{fmtNum(totals[y - 2001], lang)}</span>
@@ -115,8 +115,8 @@ export default function Calendar({ zone }: { zone?: string }) {
         <div className="cal-leg">
           <div className="legend"><span>{t('less')}</span><span className="rampbar" style={{ background: `linear-gradient(90deg,${[0.1, 0.3, 0.5, 0.75, 1].map(ramp).join(',')})` }} /><span>{t('more')}</span>
             {view === 'monthly' && <span><i className="sq anomk" />{t('anomaly')}</span>}</div>
-          <div className="legend"><span><i style={{ background: '#56657a' }} />MODIS Terra × k</span><span><i style={{ background: SENSOR.modis }} />MODIS Terra+Aqua × k</span><span><i style={{ background: SENSOR.viirs }} />VIIRS</span></div>
-          {view === 'daily' && <label className="chk"><input type="checkbox" checked={blind} onChange={(e) => setBlind(e.target.checked)} /><i style={{ background: '#33414f' }} />{t('show_blind')} <Tag kind="sim">{t('illustrative')}</Tag></label>}
+          <div className="legend"><span><i style={{ background: '#8f8779' }} />MODIS Terra × k</span><span><i style={{ background: SENSOR.modis }} />MODIS Terra+Aqua × k</span><span><i style={{ background: SENSOR.viirs }} />VIIRS</span></div>
+          {view === 'daily' && <label className="chk"><input type="checkbox" checked={blind} onChange={(e) => setBlind(e.target.checked)} /><i style={{ background: '#4a4239' }} />{t('show_blind')} <Tag kind="sim">{t('illustrative')}</Tag></label>}
         </div>
       </Card>
 
@@ -126,8 +126,8 @@ export default function Calendar({ zone }: { zone?: string }) {
             ? <rect x={sea.start * 2} y={6} width={(sea.end - sea.start) * 2} height={116} className="season" />
             : <><rect x={0} y={6} width={sea.end * 2} height={116} className="season" /><rect x={sea.start * 2} y={6} width={(366 - sea.start) * 2} height={116} className="season" /></>}
           <path d={'M0 122' + clim.map((v, i) => `L${i * 2} ${122 - (v / cmax) * 110}`).join('') + 'L732 122Z'} fill="url(#climg)" />
-          <path d={'M' + clim.map((v, i) => `${i * 2} ${122 - (v / cmax) * 110}`).join('L')} fill="none" stroke="#ffb347" strokeWidth={2} />
-          <defs><linearGradient id="climg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff7a2f" stopOpacity=".55" /><stop offset="1" stopColor="#ff7a2f" stopOpacity="0" /></linearGradient></defs>
+          <path d={'M' + clim.map((v, i) => `${i * 2} ${122 - (v / cmax) * 110}`).join('L')} fill="none" stroke="#d93a14" strokeWidth={2} />
+          <defs><linearGradient id="climg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d93a14" stopOpacity=".35" /><stop offset="1" stopColor="#d93a14" stopOpacity="0" /></linearGradient></defs>
           {months.map((m, i) => <text key={m} x={i * 61 + 30} y={142} textAnchor="middle" className="ax">{m}</text>)}
           <line x1={(db.doy[wk.t] ?? 0) * 2} x2={(db.doy[wk.t] ?? 0) * 2} y1={6} y2={122} className="nowline" />
         </svg>
