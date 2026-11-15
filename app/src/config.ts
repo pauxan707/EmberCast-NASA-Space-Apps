@@ -5,7 +5,7 @@ export const PROJECT_TAGLINE = {
   es: 'De 25 años de focos satelitales a un parte de riesgo a 7 días.',
 }
 export const CHALLENGE = 'Harmonization of MODIS and VIIRS Hot Spots'
-export const REPO_URL = 'https://github.com/pauxan707/NASA-Space-Apps-Challenge---Harmonization-of-MODIS-and-VIIRS-Hot-Spots'
+export const REPO_URL = 'https://github.com/pauxan707/EmberCast-NASA-Space-Apps'
 // Replay date the demo opens on (must be one of the weekly issue dates in model.json).
 export const DEFAULT_REPLAY_DATE = '2025-08-24'
 export const DEFAULT_ZONES = ['UY-PA', 'UY-RV', 'UY-TA', 'UY-RO', 'UY-MA', 'UY-CA']
