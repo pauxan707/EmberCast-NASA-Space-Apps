@@ -96,7 +96,7 @@ Custom domain (GoDaddy or any registrar): in the repository go to *Settings → 
 
 ## Use of AI
 
-AI tools (Claude, by Anthropic) were used to write and review code for the web app and the data pipeline, and to help edit texts. The idea, the harmonization approach and the product concept are the team's. No AI-generated images, video or audio are used. Source files written with AI assistance say so in their header.
+AI tools (Claude, by Anthropic) were used in three ways: to discuss and refine the team's own idea (a model that takes satellite fire data and returns a risk level per zone); to help write, review and debug the code of the web app and the data pipeline; and to help edit the texts and the presentation. The challenge choice, the core idea, the decision to make harmonization the foundation and the product concept are the team's. No AI-generated images, video or audio are used: every figure is a chart or map drawn by code from real data. Pipeline scripts written with AI assistance say so in their header, and the web page states it in its footer and metadata.
 
 ## Disclaimer
 
