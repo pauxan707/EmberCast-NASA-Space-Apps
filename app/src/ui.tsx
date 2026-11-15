@@ -1,10 +1,12 @@
 import { createContext, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { DB } from './data'
+import type { RegionKey } from './config'
 import type { Key, Lang } from './i18n'
 
 export interface AppCtx {
   db: DB; lang: Lang; setLang: (l: Lang) => void
+  region: RegionKey; setRegion: (r: RegionKey) => void
   t: (k: Key, vars?: Record<string, string | number>) => string
   week: number; setWeek: (w: number) => void
   myZones: string[]; setMyZones: (z: string[]) => void
@@ -97,12 +99,22 @@ export function Card({ title, right, children, className = '' }: { title?: React
   )
 }
 
-// ---------------------------------------------------------------- Uruguay SVG map
-const W = 520, KX = Math.cos((32.6 * Math.PI) / 180), LON0 = -58.55, LAT1 = -29.95
-const S = W / ((-53.0 - LON0) * KX)
-export const MAP_H = (35.05 + LAT1) * S
-export const px = (lon: number) => (lon - LON0) * KX * S
-export const py = (lat: number) => (LAT1 - lat) * S
+// ---------------------------------------------------------------- region SVG map
+// The projection comes from the region's map window (meta.view in harmonized.json).
+const W = 520
+function projection(db: DB) {
+  const v = db.meta.view
+  const KX = Math.cos((v.kxLat * Math.PI) / 180)
+  const S = W / ((v.lonE - v.lonW) * KX)
+  return {
+    H: (v.latN - v.latS) * S,
+    px: (lon: number) => (lon - v.lonW) * KX * S,
+    py: (lat: number) => (v.latN - lat) * S,
+    cw: db.meta.grid.size * KX * S, ch: db.meta.grid.size * S, half: db.meta.grid.size / 2,
+  }
+}
+/** Zone names are drawn on the map only when there are few zones (19 departments yes, 58 counties no). */
+const MAX_LABELS = 25
 
 export interface MapProps {
   fill?: (dept: number) => string | undefined
@@ -117,7 +129,7 @@ export interface MapProps {
 }
 export function useGeo() {
   const { db } = useApp()
-  return useMemo(() => db.depts.map((d) => {
+  return useMemo(() => { const { px, py } = projection(db); return db.depts.map((d) => {
     const f = db.geo.find((g) => g.properties.id === d.id)!
     const polys = (f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [f.geometry.coordinates]) as number[][][][]
     let path = '', best: number[][] = []
@@ -128,16 +140,16 @@ export function useGeo() {
     let minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9
     for (const p of best) { minx = Math.min(minx, p[0]); maxx = Math.max(maxx, p[0]); miny = Math.min(miny, p[1]); maxy = Math.max(maxy, p[1]) }
     return { path, cx: px((minx + maxx) / 2), cy: py((miny + maxy) / 2), lon: (minx + maxx) / 2, lat: (miny + maxy) / 2 }
-  }), [db])
+  }) }, [db])
 }
 let mapSeq = 0
 export function UyMap({ fill, cellFill, onPick, onCell, selected = [], points, route, labels, className = '' }: MapProps) {
   const { db } = useApp()
   const geo = useGeo()
   const maskId = useMemo(() => 'uym' + ++mapSeq, [])
-  const cw = 0.25 * KX * S, chh = 0.25 * S
+  const { H: MAP_H, px, py, cw, ch: chh, half } = useMemo(() => projection(db), [db])
   return (
-    <svg viewBox={`0 0 ${W} ${MAP_H}`} className={'uymap ' + className} role="img" aria-label="Map of Uruguay">
+    <svg viewBox={`0 0 ${W} ${MAP_H}`} className={'uymap ' + className} role="img" aria-label={'Map of ' + db.meta.region.name}>
       {cellFill && <defs><mask id={maskId} maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={MAP_H}>{geo.map((g, i) => <path key={i} d={g.path} fill="#fff" />)}</mask></defs>}
       {geo.map((g, i) => (
         <path key={i} d={g.path} className={'dept' + (onPick ? ' pick' : '')} style={fill?.(i) ? { fill: fill(i) } : undefined}
@@ -149,7 +161,7 @@ export function UyMap({ fill, cellFill, onPick, onCell, selected = [], points, r
         <g mask={`url(#${maskId})`}>
           {db.model.cells.map((c, i) => {
             const col = cellFill(i)
-            return col ? <rect key={i} x={px(c.lon - 0.125)} y={py(c.lat + 0.125)} width={cw + 0.4} height={chh + 0.4} fill={col}
+            return col ? <rect key={i} x={px(c.lon - half)} y={py(c.lat + half)} width={cw + 0.4} height={chh + 0.4} fill={col}
               className={onCell ? 'cell pick' : 'cell'} onClick={onCell ? () => onCell(i) : undefined} /> : null
           })}
         </g>
@@ -162,7 +174,7 @@ export function UyMap({ fill, cellFill, onPick, onCell, selected = [], points, r
       {route && route.length > 1 && (
         <polyline className="route" points={route.map((i) => `${geo[i].cx},${geo[i].cy}`).join(' ')} />
       )}
-      {labels && geo.map((g, i) => <text key={i} x={g.cx} y={g.cy + 3} className="dept-label" textAnchor="middle">{db.depts[i].name}</text>)}
+      {labels && geo.length <= MAX_LABELS && geo.map((g, i) => <text key={i} x={g.cx} y={g.cy + 3} className="dept-label" textAnchor="middle">{db.depts[i].name}</text>)}
       {route?.map((i, n) => (
         <g key={n} transform={`translate(${geo[i].cx},${geo[i].cy - 13})`}>
           <circle r={9} className="stop" /><text className="stop-n" textAnchor="middle" dy={3.6}>{n + 1}</text>

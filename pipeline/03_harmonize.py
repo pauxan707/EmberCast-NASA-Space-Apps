@@ -1,4 +1,6 @@
-"""Harmonize MODIS and VIIRS active-fire detections for Uruguay (real NASA FIRMS data).
+"""Harmonize MODIS and VIIRS active-fire detections for one region (real NASA FIRMS data).
+
+Usage: python pipeline/03_harmonize.py [uy|ca]   (regions are defined in regions.py)
 
 Four steps (see README):
  1. Common schema + quality filter (vegetation fires only, low-confidence dropped).
@@ -19,12 +21,11 @@ import os
 
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-RAW = os.path.join(HERE, "data_raw")
-OUT = os.path.join(HERE, "..", "app", "public", "data")
-WORK = os.path.join(HERE, "work")
-os.makedirs(OUT, exist_ok=True)
-os.makedirs(WORK, exist_ok=True)
+from regions import RAW as RAW_ROOT, get_region
+
+R = get_region()
+RAW = R["raw_dir"]
+OUT = R["out"]
 
 D0 = dt.date(2000, 11, 1)
 D1 = dt.date(2025, 12, 31)
@@ -33,7 +34,7 @@ VIIRS_START = (dt.date(2012, 1, 20) - D0).days
 AQUA_START = (dt.date(2002, 7, 4) - D0).days
 FINE = 0.01  # ~1 km cell used to count "active cells"
 COARSE = 0.25  # ~25 km cell used for maps and the risk model
-LAT0, LAT1, LON0, LON1 = -35.25, -30.0, -58.5, -53.0
+LAT0, LAT1, LON0, LON1 = R["bbox"]
 NLAT = int(round((LAT1 - LAT0) / COARSE))
 NLON = int(round((LON1 - LON0) / COARSE))
 
@@ -78,8 +79,8 @@ def load(pattern, sensor):
     return np.array(rows, dtype=np.float64), stats
 
 
-modis, st_m = load("modis_*_Uruguay.csv", "MODIS")
-viirs, st_v = load("viirs-snpp_*_Uruguay.csv", "VIIRS")
+modis, st_m = load("modis_*" + R["csv_suffix"], "MODIS")
+viirs, st_v = load("viirs-snpp_*" + R["csv_suffix"], "VIIRS")
 print("MODIS", st_m, "VIIRS", st_v)
 
 
@@ -105,10 +106,10 @@ def pip(lon, lat, rings):
     return inside
 
 
-geo = json.load(open(os.path.join(RAW, "ury_adm1.geojson"), encoding="utf-8"))
-feats = sorted(geo["features"], key=lambda f: f["properties"]["shapeName"])
-dept_names = [f["properties"]["shapeName"] for f in feats]
-dept_ids = [f["properties"]["shapeISO"] for f in feats]
+geo = json.load(open(os.path.join(RAW_ROOT, R["boundary"]), encoding="utf-8"))
+feats = sorted(geo["features"], key=lambda f: f["properties"][R["name_prop"]])
+dept_names = [f["properties"][R["name_prop"]] for f in feats]
+dept_ids = [R["id_prefix"] + f["properties"][R["id_prop"]] for f in feats]
 dept_rings = [rings_of(f["geometry"]) for f in feats]
 NDEP = len(feats)
 
@@ -121,7 +122,16 @@ glon = LON0 + (np.arange(lk_nlon) + 0.5) * LK
 LON, LATG = np.meshgrid(glon, glat)
 lookup = np.full(LON.shape, -1, dtype=np.int16)
 for di, rings in enumerate(dept_rings):
-    lookup[pip(LON, LATG, rings)] = di
+    # only test the lattice block inside the zone's bounding box (same result, much faster)
+    allpts = np.concatenate(rings)
+    i0 = max(0, int((allpts[:, 1].min() - LAT0) / LK) - 1)
+    i1 = min(lk_nlat, int((allpts[:, 1].max() - LAT0) / LK) + 2)
+    j0 = max(0, int((allpts[:, 0].min() - LON0) / LK) - 1)
+    j1 = min(lk_nlon, int((allpts[:, 0].max() - LON0) / LK) + 2)
+    if i1 <= i0 or j1 <= j0:
+        continue
+    blk = lookup[i0:i1, j0:j1]
+    blk[pip(LON[i0:i1, j0:j1], LATG[i0:i1, j0:j1], rings)] = di
 
 
 def dept_of(lat, lon):
@@ -137,7 +147,19 @@ def coarse_of(lat, lon):
     return np.where(ok, i * NLON + j, -1)
 
 
-# coarse cells whose centre is inside Uruguay
+if R["clip_to_zones"]:
+    # the country file covers more than the region: keep only detections inside a zone polygon
+    def clip(rows, st):
+        inb = (rows[:, 1] >= LAT0) & (rows[:, 1] < LAT1) & (rows[:, 2] >= LON0) & (rows[:, 2] < LON1)
+        keep = inb & (dept_of(rows[:, 1], rows[:, 2]) >= 0)
+        st["bbox_kept"] = st["kept"]
+        st["kept"] = int(keep.sum())
+        return rows[keep]
+
+    modis, viirs = clip(modis, st_m), clip(viirs, st_v)
+    print("clipped to zones: MODIS", st_m, "VIIRS", st_v)
+
+# coarse cells whose centre is inside the region
 clat = LAT0 + (np.arange(NLAT) + 0.5) * COARSE
 clon = LON0 + (np.arange(NLON) + 0.5) * COARSE
 CLON, CLAT = np.meshgrid(clon, clat)
@@ -259,7 +281,7 @@ H_cell = harmonize(V_cell, M_cell, T_cell, k_cell, kT_cell)
 H_nat = H_dep.sum(0)
 
 np.savez_compressed(
-    os.path.join(WORK, "harmonized.npz"),
+    R["work"],
     H_cell=H_cell, H_dep=H_dep, V_cell=V_cell, M_cell=M_cell,
     cell_ids=cell_ids, cell_dept=cell_dept_full[cell_ids],
     cell_lat=CLAT.ravel()[cell_ids], cell_lon=CLON.ravel()[cell_ids],
@@ -333,7 +355,7 @@ if best:
     vp = [p for p in pts if p["s"] == "VIIRS"]
     dep = int(dept_of(np.array([vp[0]["lat"]]), np.array([vp[0]["lon"]]))[0])
     example = {
-        "date": dates[key[0]].isoformat(), "dept": dept_names[dep] if dep >= 0 else "Uruguay",
+        "date": dates[key[0]].isoformat(), "dept": dept_names[dep] if dep >= 0 else R["name"],
         "points": pts, "modisDet": len(mp), "viirsDet": len(vp),
         "modisCells": ncell(mp), "viirsCells": ncell(vp),
         "k": round(float(k_dep[dep]) if dep >= 0 else k_nat, 2),
@@ -344,9 +366,22 @@ if best:
 D_RECENT = (dt.date(2024, 1, 1) - D0).days
 
 
-def recent(rows):
+RECENT_STEP = {}
+
+
+def recent(rows, sensor):
+    """2024-2025 detections for the map; big regions are thinned (every n-th) and rounded to stay small."""
     r = rows[rows[:, 0] >= D_RECENT]
-    return [[int(a[0]), round(a[1], 3), round(a[2], 3), round(a[5], 1)] for a in r]
+    nd = R["recent_decimals"]
+    step = 1
+    if R["recent_max"] and len(r) > R["recent_max"]:
+        step = int(np.ceil(len(r) / R["recent_max"]))
+        r = r[np.argsort(r[:, 0], kind="stable")][::step]
+    RECENT_STEP[sensor] = step
+    return [[int(a[0]), round(a[1], nd), round(a[2], nd), round(a[5], 1)] for a in r]
+
+
+recent_out = {"modis": recent(modis, "modis"), "viirs": recent(viirs, "viirs")}
 
 
 out = {
@@ -358,12 +393,16 @@ out = {
         "filters": {"modis": st_m, "viirs": st_v},
         "holdout": holdout,
         "grid": {"lat0": LAT0, "lon0": LON0, "size": COARSE, "nLat": NLAT, "nLon": NLON},
+        "region": {"key": R["key"], "name": R["name"], "zones": NDEP},
+        "bbox": {"lat0": LAT0, "lat1": LAT1, "lon0": LON0, "lon1": LON1},
+        "view": dict(zip(("lonW", "lonE", "latS", "latN", "kxLat"), R["view"])),
+        "recentStep": RECENT_STEP,
     },
     "yearly": yearly,
     "ratios": [{"y": y, "r": round(r, 3)} for y, r in zip(years_ov, ratios)],
     "depts": depts,
     "example": example,
-    "recent": {"modis": recent(modis), "viirs": recent(viirs)},
+    "recent": recent_out,
 }
 json.dump(out, open(os.path.join(OUT, "harmonized.json"), "w"), separators=(",", ":"))
 
@@ -374,7 +413,7 @@ def rnd(c):
 
 for f in feats:
     f["geometry"]["coordinates"] = rnd(f["geometry"]["coordinates"])
-    f["properties"] = {"id": f["properties"]["shapeISO"], "name": f["properties"]["shapeName"]}
+    f["properties"] = {"id": R["id_prefix"] + f["properties"][R["id_prop"]], "name": f["properties"][R["name_prop"]]}
 json.dump({"type": "FeatureCollection", "features": feats},
           open(os.path.join(OUT, "departments.geojson"), "w", encoding="utf-8"), separators=(",", ":"), ensure_ascii=False)
 print("yearly", [(r["y"], r["modisDet"], r["viirsDet"], r["harm"]) for r in yearly])

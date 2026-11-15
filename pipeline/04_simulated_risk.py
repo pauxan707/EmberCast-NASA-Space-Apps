@@ -1,5 +1,7 @@
 """ILLUSTRATIVE risk layer for the demo (NOT a trained model).
 
+Usage: python pipeline/04_simulated_risk.py [uy|ca]   (run 03_harmonize.py for the region first)
+
 The score only uses information available on the issue date (past fire activity and season);
 it never looks at what happened afterwards, so the "what happened next" replay stays honest.
 
@@ -13,12 +15,13 @@ Code written with AI assistance (Claude), reviewed by the team.
 import datetime as dt
 import json
 import os
-
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "app", "public", "data")
-Z = np.load(os.path.join(HERE, "work", "harmonized.npz"))
+from regions import get_region
+
+R = get_region()
+OUT = R["out"]
+Z = np.load(R["work"])
 H, V, Hdep = Z["H_cell"].astype(np.float64), Z["V_cell"].astype(np.float64), Z["H_dep"].astype(np.float64)
 cell_dept, cell_lat, cell_lon, cell_ids = Z["cell_dept"], Z["cell_lat"], Z["cell_lon"], Z["cell_ids"]
 NC, ND = H.shape
@@ -62,8 +65,8 @@ clim_s = (np.roll(clim_week, 1, 1) + clim_week * 2 + np.roll(clim_week, -1, 1)) 
 FREQ_CUTS = [0.08, 0.18, 0.32]
 clim_levels = ["".join(str(int(v)) for v in np.digitize(clim_s[c], FREQ_CUTS)) for c in range(NC)]
 
-# simulated static human-influence field (smooth, higher towards the south coast)
-human = 0.5 + 0.35 * np.tanh((-33.2 - cell_lat) * 1.2) + 0.15 * np.sin(cell_lon * 2.1 + cell_lat * 1.3)
+# simulated static human-influence field (smooth, higher towards the south)
+human = 0.5 + 0.35 * np.tanh((R["human_lat"] - cell_lat) * 1.2) + 0.15 * np.sin(cell_lon * 2.1 + cell_lat * 1.3)
 human = np.clip(human + rng.normal(0, 0.05, NC), 0, 1)
 
 GROUPS = ["season", "recent", "neighbors", "dryness", "heat", "humidity", "wind", "human"]
@@ -77,7 +80,7 @@ wind = np.zeros_like(dry)
 state = rng.normal(0, 1, NDEP)
 for i, t in enumerate(issue):
     doy = dates[t].timetuple().tm_yday
-    summer = np.cos(2 * np.pi * (doy - 15) / 365.25)  # +1 mid January
+    summer = np.cos(2 * np.pi * (doy - R["summer_doy"]) / 365.25)  # +1 at the region's mid summer
     state = 0.75 * state + 0.66 * (0.6 * rng.normal(0, 1) + 0.8 * rng.normal(0, 1, NDEP))
     dry[i] = np.clip(9 + 5 * summer + 7 * state, 0, 34).round()
     tmax[i] = (22 + 8 * summer + 1.8 * state + rng.normal(0, 1, NDEP)).round(1)
@@ -170,5 +173,6 @@ for l, w in zip(lv, weeks):
     a = np.array([z["act7"] for z in w["zones"]]); tot = a.sum()
     cand.append((round(float(a[l >= 2].sum() / max(tot, 1)), 2), int(tot), int((l >= 2).sum()), w["date"]))
 print("demo weeks (share of next-7d activity in high zones, total, n high zones)")
-for c in sorted([c for c in cand if c[1] >= 40 and 4 <= c[2] <= 9], reverse=True)[:8]: print(c)
+HI_LO, HI_HI = round(4 * NDEP / 19), round(9 * NDEP / 19)  # 4..9 high zones out of 19, scaled to the region
+for c in sorted([c for c in cand if c[1] >= 40 and HI_LO <= c[2] <= HI_HI], reverse=True)[:8]: print(c)
 print({f: os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT)})

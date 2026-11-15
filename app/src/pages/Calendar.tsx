@@ -66,7 +66,7 @@ export default function Calendar({ zone }: { zone?: string }) {
       <div className="toolbar">
         <label>{t('zone')}
           <select value={z.id} onChange={(e) => go('/calendar/' + e.target.value)}>
-            <option value="UY">Uruguay</option>
+            <option value={db.nat.id}>{db.nat.name}</option>
             {db.depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </label>

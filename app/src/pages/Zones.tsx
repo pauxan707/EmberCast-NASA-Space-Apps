@@ -23,7 +23,7 @@ export default function Zones() {
         <div className="sec-tools">
           <div className="seg">
             <button className={!all ? 'on' : ''} onClick={() => setAll(false)}>{t('mine')}</button>
-            <button className={all ? 'on' : ''} onClick={() => setAll(true)}>{t('all19')}</button>
+            <button className={all ? 'on' : ''} onClick={() => setAll(true)}>{t('all19', { n: db.depts.length })}</button>
           </div>
           <a className="btn" href="#/alerts">{t('manage_alerts')} <span>→</span></a>
         </div>

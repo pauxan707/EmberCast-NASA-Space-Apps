@@ -12,7 +12,7 @@ MODIS and VIIRS have tracked active fires for more than two decades, but their r
 
 | Part | Status |
 |---|---|
-| Fire record (MODIS 2000–2025, VIIRS S-NPP 2012–2025, Uruguay) | **Real NASA FIRMS data**, downloaded from the public country archive |
+| Fire record (MODIS 2000–2025, VIIRS S-NPP 2012–2025; Uruguay and California) | **Real NASA FIRMS data**, downloaded from the public country archive |
 | Harmonization (factors, uncertainty band, hold-out validation, same-fire example) | **Real**, computed by `pipeline/03_harmonize.py` |
 | Burn calendar, anomalies, critical period, CSV export, "what happened next" | **Real**, derived from the harmonized record |
 | 7-day risk levels, their reasons, model metrics, feature weights | **Illustrative**: generated with a fixed seed on top of the real record (`pipeline/04_simulated_risk.py`). It only uses information available on the issue date (season and past activity), never what happened afterwards. The trained model is the next step |
@@ -34,7 +34,9 @@ Measured on real data (factor fitted on 2012–2018, checked on 2019–2025, whi
 - monthly correlation between harmonized MODIS and VIIRS: **r = 0.98**
 - national factor ×2.40, year-to-year spread ±15%
 
-Known limits: it cannot recover small fires MODIS never saw (it estimates them on average), it does not correct overpass times, 2000–2002 is Terra-only and less reliable, and this pilot covers Uruguay with VIIRS S-NPP only.
+The same pipeline run on **California** (58 counties): annual error 48% → 9%, monthly r = 0.99, factor ×1.90. Switch region in the header.
+
+Known limits: it cannot recover small fires MODIS never saw (it estimates them on average), it does not correct overpass times, 2000–2002 is Terra-only and less reliable, and this pilot covers Uruguay and California with VIIRS S-NPP only.
 
 ## What the app does
 
@@ -62,9 +64,10 @@ npm run build    # static site in app/dist
 Rebuild the data (Python 3.10+, `numpy`):
 
 ```bash
-python pipeline/01_download.py        # FIRMS country archive + department boundaries
-python pipeline/03_harmonize.py       # harmonization -> app/public/data/harmonized.json
-python pipeline/04_simulated_risk.py  # illustrative risk layer -> app/public/data/model.json
+# region key: uy (default) or ca; settings live in pipeline/regions.py
+python pipeline/01_download.py ca        # FIRMS country archive + zone boundaries
+python pipeline/03_harmonize.py ca       # harmonization -> app/public/data/ca/harmonized.json
+python pipeline/04_simulated_risk.py ca  # illustrative risk layer -> app/public/data/ca/model.json
 python pipeline/05_globe.py           # landing globe: world outline + global MODIS, last 7 days
 ```
 
@@ -79,13 +82,14 @@ Custom domain (GoDaddy or any registrar): in the repository go to *Settings → 
 ## Data and resources
 
 **NASA**
-- [FIRMS](https://firms.modaps.eosdis.nasa.gov/country/) active fire archive: MODIS Collection 6.1 (MCD14ML, Terra and Aqua) and VIIRS S-NPP 375 m (VNP14IMGT). Used: all detections over Uruguay, Nov 2000 – Dec 2025.
+- [FIRMS](https://firms.modaps.eosdis.nasa.gov/country/) active fire archive: MODIS Collection 6.1 (MCD14ML, Terra and Aqua) and VIIRS S-NPP 375 m (VNP14IMGT). Used: all detections over Uruguay and over California (from the United States files), Nov 2000 – Dec 2025.
 
 **Planned for the real risk model (not loaded in this demo):** NASA POWER (weather), MODIS/VIIRS NDVI and land cover, SMAP soil moisture, Black Marble night lights, GPW population, OpenStreetMap roads and towns.
 
 **Other**
 - [FIRMS active fire text files](https://firms.modaps.eosdis.nasa.gov/active_fire/): MODIS C6.1 global detections of the last 7 days, shown on the landing-page globe (snapshot taken 15 Nov 2026).
 - World land outline: [Natural Earth](https://www.naturalearthdata.com/) 1:110m (public domain).
+- California county boundaries: US Census Bureau TIGERweb (public domain).
 - Department boundaries: [geoBoundaries](https://www.geoboundaries.org/) gbOpen URY ADM1 (ODbL, © OpenStreetMap contributors).
 - Fonts: Fraunces, IBM Plex Sans, IBM Plex Mono (SIL Open Font License), via Google Fonts.
 - Software: React, Vite, TypeScript, Python, NumPy.

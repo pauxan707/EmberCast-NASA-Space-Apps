@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
+import { REGION_KEYS, REGIONS } from './config'
 import { fmtDate, useApp } from './ui'
 
 interface GlobeData { from: string; to: string; n: number; fires: number[]; land: number[][][] }
 const RAD = Math.PI / 180
 const FIRE = ['#c2401c', '#ee7a26', '#fbb21e', '#fff3a6']
 const PHI0 = -14 * RAD // tilt: look slightly from the south
-const PILOT: [number, number] = [-56, -32.8]
 
 /** Orthographic globe with one week of real MODIS detections worldwide. Drag to turn. */
 export default function Globe() {
-  const { t, lang } = useApp()
+  const { t, lang, region } = useApp()
   const ref = useRef<HTMLCanvasElement>(null)
   const [meta, setMeta] = useState<GlobeData | null>(null)
 
@@ -84,14 +84,15 @@ export default function Globe() {
       g.restore()
       // rim
       g.beginPath(); g.arc(cx, cy, R, 0, 7); g.strokeStyle = 'rgba(242,237,227,.35)'; g.lineWidth = 1; g.stroke()
-      // pilot marker
-      const [px, py, pv] = proj(PILOT[0], PILOT[1], l0)
-      if (pv > 0.15) {
+      // pilot markers: the region on screen gets the "pilot" label, the others just their name
+      for (const k of REGION_KEYS) {
+        const [px, py, pv] = proj(REGIONS[k].globe[0], REGIONS[k].globe[1], l0)
+        if (pv <= 0.15) continue
         g.strokeStyle = '#f2ede3'; g.lineWidth = 1.2
         g.beginPath(); g.arc(px, py, 9, 0, 7); g.stroke()
         g.beginPath(); g.moveTo(px + 9, py); g.lineTo(px + 34, py); g.stroke()
         g.fillStyle = '#f2ede3'; g.font = "500 11px 'IBM Plex Mono', monospace"; g.textBaseline = 'middle'
-        g.fillText(label, px + 39, py)
+        g.fillText(k === region ? label : REGIONS[k].name, px + 39, py)
       }
     }
 
@@ -110,7 +111,7 @@ export default function Globe() {
     const up = () => { drag = false }
     c.addEventListener('pointerdown', down); c.addEventListener('pointermove', move); c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up)
     return () => { cancelAnimationFrame(raf); c.removeEventListener('pointerdown', down); c.removeEventListener('pointermove', move); c.removeEventListener('pointerup', up); c.removeEventListener('pointercancel', up) }
-  }, [meta, t])
+  }, [meta, t, region])
 
   return (
     <figure className="globe">

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { REGIONS } from '../config'
 import { zoneLevel } from '../data'
 import type { Key } from '../i18n'
 import { Card, fmtDate, Illus, LEVELS, RiskBadge, RiskGlyph, RiskLegend, Tag, useApp, UyMap } from '../ui'
@@ -11,12 +12,12 @@ const DAY = 864e5
 interface Stop { d: number; days: number }
 
 export default function Planner() {
-  const { db, t, lang, week } = useApp()
+  const { db, t, lang, week, region } = useApp()
   const wk = db.model.weeks[week]
   const today = Date.parse(wk.date + 'T00:00:00Z')
   const idx = (id: string) => db.depts.findIndex((d) => d.id === id)
   const [act, setAct] = useState<Act>('trip')
-  const [stops, setStops] = useState<Stop[]>([{ d: idx('UY-MA'), days: 3 }, { d: idx('UY-RO'), days: 3 }, { d: idx('UY-TT'), days: 2 }])
+  const [stops, setStops] = useState<Stop[]>(() => REGIONS[region].stops.map((id, n) => ({ d: idx(id), days: n < 2 ? 3 : 2 })).filter((s) => s.d >= 0))
   const [start, setStart] = useState(4)
   const tol = ACTS.find((a) => a.id === act)!.tol
   const total = stops.reduce((a, s) => a + s.days, 0)

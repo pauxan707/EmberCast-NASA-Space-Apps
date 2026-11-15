@@ -6,9 +6,8 @@ BRIEF_DEMO.md
 .claude/
 pipeline/data_raw/
 pipeline/work/
-pipeline/02_power.py
-pipeline/04_model.py
 node_modules/
 dist/
 *.tsbuildinfo
 __pycache__/
+presentacion/

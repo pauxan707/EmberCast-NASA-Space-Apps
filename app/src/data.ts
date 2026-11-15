@@ -26,6 +26,10 @@ export interface Meta {
   filters: { modis: Record<string, number>; viirs: Record<string, number> }
   holdout: { kFit: number; monthlyR: number; annualMAPE: number; annualMAPEraw: number; totalBiasPct: number; years: number[]; predY: number[]; obsY: number[]; rawY: number[] }
   grid: { lat0: number; lon0: number; size: number; nLat: number; nLon: number }
+  region: { key: string; name: string; zones: number }
+  bbox: { lat0: number; lat1: number; lon0: number; lon1: number }
+  /** Map window (degrees) and the latitude used for the x scale. */
+  view: { lonW: number; lonE: number; latS: number; latN: number; kxLat: number }
 }
 export interface Dept {
   idx: number; id: string; name: string; k: number; kT: number
@@ -49,10 +53,10 @@ export const isoOf = (i: number) => dateOf(i).toISOString().slice(0, 10)
 export const idxOf = (iso: string) => Math.round((Date.parse(iso + 'T00:00:00Z') - START) / DAY)
 export const YEARS = Array.from({ length: 25 }, (_, i) => 2001 + i)
 
-export async function loadDB(): Promise<DB> {
-  const base = import.meta.env.BASE_URL + 'data/'
+export async function loadDB(region: string): Promise<DB> {
+  const base = import.meta.env.BASE_URL + 'data/' + region + '/'
   const [h, model, blind, geo] = await Promise.all(
-    ['harmonized.json', 'model.json', 'blind.json', 'departments.geojson'].map((f) => fetch(base + f).then((r) => r.json())),
+    ['harmonized.json', 'model.json', 'blind.json', 'departments.geojson'].map((f) => fetch(base + f).then((r) => { if (!r.ok) throw new Error(f + ' ' + r.status); return r.json() })),
   )
   const meta: Meta = h.meta
   START = Date.parse(meta.start + 'T00:00:00Z')
@@ -66,7 +70,7 @@ export async function loadDB(): Promise<DB> {
   const mk = (idx: number, id: string, name: string, k: number, kT: number): Dept => ({
     idx, id, name, k, kT, m: new Uint16Array(n), v: new Uint16Array(n), h: new Float32Array(n), blind: '',
   })
-  const nat = mk(-1, 'UY', 'Uruguay', meta.kNat, meta.kTNat)
+  const nat = mk(-1, meta.region.key.toUpperCase(), meta.region.name, meta.kNat, meta.kTNat)
   const depts: Dept[] = h.depts.map((d: { id: string; name: string; k: number; kT: number; days: number[][] }, idx: number) => {
     const z = mk(idx, d.id, d.name, d.k, d.kT)
     z.blind = blind.blind[idx]

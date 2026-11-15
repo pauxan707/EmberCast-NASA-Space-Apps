@@ -5,7 +5,7 @@ export const dict = {
   // navigation / chrome
   nav_home: ['Home', 'Inicio'],
   nav_zones: ['Zones', 'Zonas'],
-  l_globe_pilot: ['Uruguay pilot', 'Piloto Uruguay'],
+  l_globe_pilot: ['{region} pilot', 'Piloto {region}'],
   l_globe_alt: ['Globe with fires detected by satellite in the last week', 'Globo con los fuegos detectados por satélite en la última semana'],
   l_globe_cap: ['{n} places where NASA\'s MODIS saw fire, {from} – {to}. Real FIRMS data. Drag to turn.', '{n} lugares donde MODIS de la NASA vio fuego, {from} – {to}. Datos reales de FIRMS. Arrastrá para girar.'],
   nav_how: ['How it works', 'Cómo funciona'],
@@ -16,10 +16,11 @@ export const dict = {
   nav_model: ['Risk model', 'Modelo'],
   nav_alerts: ['Alerts', 'Avisos'],
   ribbon_poc: ['Proof of concept', 'Prueba de concepto'],
-  ribbon_real: ['Fire record: real NASA FIRMS data (MODIS + VIIRS, Uruguay 2000–2025)', 'Registro de fuego: datos reales de NASA FIRMS (MODIS + VIIRS, Uruguay 2000–2025)'],
+  ribbon_real: ['Fire record: real NASA FIRMS data (MODIS + VIIRS, {region} 2000–2025)', 'Registro de fuego: datos reales de NASA FIRMS (MODIS + VIIRS, {region} 2000–2025)'],
   ribbon_sim: ['7-day risk outlook: illustrative, simulated model output', 'Riesgo a 7 días: ilustrativo, salida de modelo simulada'],
   ribbon_model_real: ['7-day risk outlook: first model, backtested on unseen years', 'Riesgo a 7 días: primer modelo, probado en años no vistos'],
   replay: ['Replay date', 'Fecha de repetición'],
+  region_label: ['Region', 'Región'],
   replay_help: ['The demo replays the FIRMS archive: pick any week of 2024–2025 and see the report as it would have been issued that day.', 'La demo repite el archivo de FIRMS: elegí una semana de 2024–2025 y mirá el parte como se habría emitido ese día.'],
   foot_1: ['The fire record is built from the public NASA FIRMS archive (MODIS MCD14ML Collection 6.1 and VIIRS S-NPP VNP14IMGT), harmonized by the team. The demo replays the archive; the selected date is {date}. A live near-real-time feed is future work.', 'El registro de fuego se construye con el archivo público de NASA FIRMS (MODIS MCD14ML Colección 6.1 y VIIRS S-NPP VNP14IMGT), armonizado por el equipo. La demo repite el archivo; la fecha elegida es {date}. La conexión en tiempo casi real es trabajo futuro.'],
   foot_2: ['Risk levels, their reasons, model metrics and cloud "blind days" are illustrative: generated with a fixed seed on top of the real record. Planned sources for the real model: NASA POWER, MODIS/VIIRS NDVI, SMAP, Black Marble, GPW, OpenStreetMap.', 'Los niveles de riesgo, sus razones, las métricas del modelo y los "días ciegos" por nubes son ilustrativos: generados con semilla fija sobre el registro real. Fuentes previstas para el modelo real: NASA POWER, NDVI de MODIS/VIIRS, SMAP, Black Marble, GPW, OpenStreetMap.'],
@@ -27,13 +28,13 @@ export const dict = {
   foot_3: ['Risk means probability of satellite-detectable fire activity in a ~25 km cell. It is not a real-time alert and does not replace official warning systems. Not endorsed by NASA. Code written with AI assistance and reviewed by the team.', 'Riesgo significa probabilidad de actividad de fuego detectable por satélite en una celda de ~25 km. No es una alerta en tiempo real ni reemplaza a los sistemas oficiales. Sin respaldo oficial de la NASA. Código escrito con asistencia de IA y revisado por el equipo.'],
   next: ['Next', 'Siguiente'],
   tour_0: ['EmberCast: the fire risk for the week ahead, built on 25 years of NASA satellite records.', 'EmberCast: el riesgo de fuego de la semana que viene, sobre 25 años de registros satelitales de la NASA.'],
-  l_eyebrow: ['Fire risk outlook · Uruguay pilot', 'Parte de riesgo de incendios · piloto Uruguay'],
+  l_eyebrow: ['Fire risk outlook · {region} pilot', 'Parte de riesgo de incendios · piloto {region}'],
   l_h1a: ['See the fire risk', 'Mirá el riesgo de fuego'],
   l_h1b: ['before it becomes a fire.', 'antes de que sea un incendio.'],
   l_lead: ['EmberCast reads 25 years of NASA satellite fire records and tells you, zone by zone, how likely fire is in the week ahead. For those who prevent it, and for anyone planning around it.', 'EmberCast lee 25 años de registros satelitales de fuego de la NASA y te dice, zona por zona, qué tan probable es el fuego en la semana que viene. Para quien lo previene y para quien planifica a su alrededor.'],
   l_cta_zones: ['Check the zones', 'Ver las zonas'],
   l_cta_plan: ['Plan a trip or activity', 'Planificar un viaje o actividad'],
-  l_fig: ['Every day since 2001. Each row is a year, each mark a day of satellite-detected fire in Uruguay. Real NASA data from two sensors, harmonized into one record.', 'Cada día desde 2001. Cada fila es un año, cada marca un día con fuego detectado por satélite en Uruguay. Datos reales de la NASA de dos sensores, armonizados en un solo registro.'],
+  l_fig: ['Every day since 2001. Each row is a year, each mark a day of satellite-detected fire in {region}. Real NASA data from two sensors, harmonized into one record.', 'Cada día desde 2001. Cada fila es un año, cada marca un día con fuego detectado por satélite en {region}. Datos reales de la NASA de dos sensores, armonizados en un solo registro.'],
   l_fig_a: ['Explore the calendar', 'Explorar el calendario'],
   uc_title: ['Built for decisions', 'Hecho para decidir'],
   uc1_t: ['Prevent', 'Prevenir'],
@@ -108,7 +109,7 @@ export const dict = {
   my_zones: ['My zones', 'Mis zonas'],
   my_zones_sub: ['Reports issued {date}, highest risk first. Open one to see why and to verify.', 'Partes emitidos el {date}, primero el mayor riesgo. Abrí uno para ver por qué y verificar.'],
   mine: ['Subscribed', 'Suscritas'],
-  all19: ['All 19 departments', 'Los 19 departamentos'],
+  all19: ['All {n} departments', 'Los {n} departamentos'],
   vs_usual: ['the usual activity for this time of year', 'la actividad habitual para esta época'],
   open_report: ['Open report', 'Abrir parte'],
   flow_title: ['From data to decision in 30 seconds', 'De datos a decisión en 30 segundos'],
@@ -212,7 +213,7 @@ export const dict = {
 
   // harmonization
   h_title: ['How we harmonize MODIS and VIIRS', 'Cómo armonizamos MODIS y VIIRS'],
-  h_sub: ['Everything on this page is computed from real NASA FIRMS detections over Uruguay. Nothing here is simulated.', 'Todo en esta página se calcula con detecciones reales de NASA FIRMS sobre Uruguay. Aquí nada es simulado.'],
+  h_sub: ['Everything on this page is computed from real NASA FIRMS detections over {region}. Nothing here is simulated.', 'Todo en esta página se calcula con detecciones reales de NASA FIRMS sobre {region}. Aquí nada es simulado.'],
   h_chart_raw: ['Raw detections per year: MODIS + VIIRS', 'Detecciones crudas por año: MODIS + VIIRS'],
   h_chart_harm: ['Harmonized fire activity per year', 'Actividad de fuego armonizada por año'],
   raw: ['Raw', 'Crudo'],
@@ -263,7 +264,7 @@ export const dict = {
   cant_1: ['It does not recover small fires MODIS never saw: it estimates them on average.', 'No recupera los fuegos chicos que MODIS nunca vio: los estima en promedio.'],
   cant_2: ['It does not fix overpass times: a short fire between two passes may be missed by both.', 'No corrige los horarios de pasada: un fuego breve entre dos pasadas puede no verlo ninguno.'],
   cant_3: ['Satellites cannot see through clouds; 2000–2002 has Terra only and is less reliable.', 'Los satélites no ven bajo nubes; 2000–2002 solo tiene Terra y es menos confiable.'],
-  cant_4: ['This pilot covers Uruguay with VIIRS S-NPP; NOAA-20/21 and neighbouring regions come next.', 'Este piloto cubre Uruguay con VIIRS S-NPP; NOAA-20/21 y la región vecina vienen después.'],
+  cant_4: ['This pilot covers {region} with VIIRS S-NPP; NOAA-20/21 and neighbouring regions come next.', 'Este piloto cubre {region} con VIIRS S-NPP; NOAA-20/21 y la región vecina vienen después.'],
 
   // model
   m_title: ['The risk model', 'El modelo de riesgo'],
@@ -386,9 +387,16 @@ export const dict = {
 } as const satisfies Record<string, readonly [string, string]>
 
 export type Key = keyof typeof dict
-export function tr(lang: Lang, key: Key, vars?: Record<string, string | number>): string {
+// The copy was written for Uruguay's departments; regions whose zones are counties swap the word.
+const COUNTY: [RegExp, string][] = [
+  [/departments/g, 'counties'], [/Departments/g, 'Counties'], [/department/g, 'county'], [/Department/g, 'County'],
+  [/departamento/g, 'condado'], [/Departamento/g, 'Condado'],
+  [/nationally/g, 'statewide'], [/national/g, 'statewide'], [/nacional/g, 'estatal'],
+]
+export function tr(lang: Lang, key: Key, vars?: Record<string, string | number>, counties = false): string {
   const e = dict[key] as readonly [string, string] | undefined
   let s: string = e ? e[lang === 'en' ? 0 : 1] : String(key)
+  if (counties) for (const [re, w] of COUNTY) s = s.replace(re, w)
   if (vars) for (const k in vars) s = s.replaceAll('{' + k + '}', String(vars[k]))
   return s
 }

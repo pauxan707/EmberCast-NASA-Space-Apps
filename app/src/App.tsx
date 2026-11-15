@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CHALLENGE, DEFAULT_REPLAY_DATE, DEFAULT_ZONES, PROJECT_NAME, REPO_URL } from './config'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { CHALLENGE, DEFAULT_REGION, PROJECT_NAME, REGION_KEYS, REGIONS, REPO_URL } from './config'
+import type { RegionKey } from './config'
 import { loadDB } from './data'
 import type { DB } from './data'
 import { tr } from './i18n'
@@ -27,9 +28,16 @@ const TOUR: { r: string; k: Key }[] = [
 const TOUR_MS = 7500
 const SECTION: Record<string, string> = { report: '/zones', alerts: '/zones', harmonization: '/how', model: '/how' }
 const getRoute = () => window.location.hash.replace(/^#/, '') || '/'
+const isRegion = (r: string | null): r is RegionKey => !!r && (REGION_KEYS as string[]).includes(r)
+// "my zones" are stored per region (Uruguay keeps the original key)
+const zonesKey = (r: RegionKey) => (r === DEFAULT_REGION ? 'zones' : 'zones_' + r)
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k) } catch { return null } },
   set: (k: string, v: string) => { try { localStorage.setItem(k, v) } catch { /* ignore */ } },
+}
+
+function readZones(r: RegionKey): string[] {
+  try { return JSON.parse(store.get(zonesKey(r)) || 'null') || REGIONS[r].zones } catch { return REGIONS[r].zones }
 }
 
 function Logo() {
@@ -47,22 +55,43 @@ export default function App() {
   const [lang, setLangS] = useState<Lang>(() => (store.get('lang') === 'es' ? 'es' : 'en'))
   const [route, setRoute] = useState(getRoute)
   const [week, setWeek] = useState(0)
-  const [myZones, setMyZonesS] = useState<string[]>(() => { try { return JSON.parse(store.get('zones') || 'null') || DEFAULT_ZONES } catch { return DEFAULT_ZONES } })
+  const [region, setRegionS] = useState<RegionKey>(() => { const r = store.get('region'); return isRegion(r) ? r : DEFAULT_REGION })
+  const [myZones, setMyZonesS] = useState<string[]>(() => readZones(region))
+  const cache = useRef(new Map<RegionKey, DB>())
   const [tour, setTour] = useState(-1)
 
+  // load (or reuse) the selected region; the page keeps showing the previous one until the data arrives
   useEffect(() => {
-    loadDB().then((d) => {
+    let alive = true
+    const show = (d: DB) => {
       setDb(d)
-      setWeek(Math.max(0, d.model.weeks.findIndex((w) => w.date === DEFAULT_REPLAY_DATE)))
-    }).catch((e) => setErr(String(e)))
+      setWeek(Math.max(0, d.model.weeks.findIndex((w) => w.date === REGIONS[region].replay)))
+      setMyZonesS(readZones(region))
+    }
+    const hit = cache.current.get(region)
+    if (hit) show(hit)
+    else loadDB(region).then((d) => { cache.current.set(region, d); if (alive) show(d) }).catch((e) => { if (alive) setErr(String(e)) })
+    return () => { alive = false }
+  }, [region])
+  useEffect(() => {
     const h = () => { setRoute(getRoute()); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }) }
     window.addEventListener('hashchange', h)
     return () => window.removeEventListener('hashchange', h)
   }, [])
   const go = useCallback((r: string) => { window.location.hash = r }, [])
   const setLang = (l: Lang) => { setLangS(l); store.set('lang', l); document.documentElement.lang = l }
-  const setMyZones = (z: string[]) => { setMyZonesS(z); store.set('zones', JSON.stringify(z)) }
-  const t = useCallback((k: Key, vars?: Record<string, string | number>) => tr(lang, k, vars), [lang])
+  // region actually on screen (follows the loaded data, not the pending selection)
+  const shown = (db?.meta.region.key as RegionKey | undefined) ?? region
+  const setMyZones = (z: string[]) => { setMyZonesS(z); store.set(zonesKey(shown), JSON.stringify(z)) }
+  const setRegion = (r: RegionKey) => {
+    if (r === region) return
+    setRegionS(r); store.set('region', r)
+    // zone ids in the address belong to the old region
+    const s = getRoute().split('/').filter(Boolean)
+    if (s[1] && s[1] !== 'top') window.location.hash = '/' + s[0] + (s[0] === 'report' ? '/top' : '')
+  }
+  const t = useCallback((k: Key, vars?: Record<string, string | number>) =>
+    tr(lang, k, { region: REGIONS[shown].name, ...vars }, !!REGIONS[shown].counties), [lang, shown])
 
   useEffect(() => {
     if (tour < 0) return
@@ -71,9 +100,9 @@ export default function App() {
     return () => clearTimeout(id)
   }, [tour, go])
 
-  const ctx = useMemo(() => db && { db, lang, setLang, t, week, setWeek, myZones, setMyZones, route, go, simulated: db.model.source !== 'real' },
+  const ctx = useMemo(() => db && { db, region: shown, setRegion, lang, setLang, t, week, setWeek, myZones, setMyZones, route, go, simulated: db.model.source !== 'real' },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [db, lang, t, week, myZones, route, go])
+    [db, shown, region, lang, t, week, myZones, route, go])
 
   if (err) return <div className="boot">Could not load data: {err}</div>
   if (!db || !ctx) return <div className="boot"><Logo /><span>{PROJECT_NAME}</span></div>
@@ -107,6 +136,12 @@ export default function App() {
           {NAV.map((n) => <a key={n.r} href={'#' + n.r} className={active === n.r ? 'on' : ''}>{t(n.k)}</a>)}
         </nav>
         <div className="top-r">
+          <label className="replay" title={t('region_label')}>
+            <span>{t('region_label')}</span>
+            <select value={region} onChange={(e) => setRegion(e.target.value as RegionKey)}>
+              {REGION_KEYS.map((k) => <option key={k} value={k}>{REGIONS[k].name}</option>)}
+            </select>
+          </label>
           <label className="replay" title={t('replay_help')}>
             <span>{t('replay')}</span>
             <select value={week} onChange={(e) => setWeek(+e.target.value)}>
@@ -118,7 +153,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main key={route + week} className={'page' + (landing ? ' bleed' : '')}>{page}</main>
+      <main key={shown + route + week} className={'page' + (landing ? ' bleed' : '')}>{page}</main>
       <footer className="foot">
         <div className="wrap foot-in">
           <div>
