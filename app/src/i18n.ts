@@ -3,7 +3,11 @@ export type Lang = 'en' | 'es'
 
 export const dict = {
   // navigation / chrome
+  nav_home: ['Home', 'Inicio'],
   nav_zones: ['Zones', 'Zonas'],
+  l_globe_pilot: ['Uruguay pilot', 'Piloto Uruguay'],
+  l_globe_alt: ['Globe with fires detected by satellite in the last week', 'Globo con los fuegos detectados por satélite en la última semana'],
+  l_globe_cap: ['{n} places where NASA\'s MODIS saw fire, {from} – {to}. Real FIRMS data. Drag to turn.', '{n} lugares donde MODIS de la NASA vio fuego, {from} – {to}. Datos reales de FIRMS. Arrastrá para girar.'],
   nav_how: ['How it works', 'Cómo funciona'],
   nav_map: ['Map', 'Mapa'],
   nav_calendar: ['Burn calendar', 'Calendario'],

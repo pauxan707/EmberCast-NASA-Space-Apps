@@ -1,5 +1,8 @@
 """ILLUSTRATIVE risk layer for the demo (NOT a trained model).
 
+The score only uses information available on the issue date (past fire activity and season);
+it never looks at what happened afterwards, so the "what happened next" replay stays honest.
+
 Builds a plausible 7-day risk score per 25-km cell from the real harmonized history plus
 *simulated* weather and human-influence signals generated with a fixed seed. Every number
 this script writes is flagged `"source": "simulated"` and is labelled "illustrative" in the UI.
@@ -86,17 +89,18 @@ for i, t in enumerate(issue):
     w = min(51, (dates[t].timetuple().tm_yday - 1) // 7)
     season = clim_s[:, w]
     a30 = win(cH, t - 30, t)
-    nb = np.array([a30[l].mean() if l else 0 for l in nbrs])
+    a7 = win(cH, t - 7, t)
+    nb = np.array([(a30[l].mean() + 2 * a7[l].mean()) if l else 0 for l in nbrs])
     d = cell_dept
     comp = np.column_stack([
-        1.9 * (season - 0.12),
-        0.95 * np.tanh(a30 / 4) - 0.10,
-        0.65 * np.tanh(nb / 3) - 0.08,
-        0.045 * (dry[i][d] - 10),
-        0.035 * (tmax[i][d] - 24),
-        -0.012 * (rh[i][d] - 62),
-        0.05 * (wind[i][d] - 4.2),
-        0.22 * (human - 0.5),
+        2.6 * (season - 0.12),
+        0.8 * np.tanh(a30 / 4) + 0.8 * np.tanh(a7 / 2) - 0.12,
+        0.95 * np.tanh(nb / 3) - 0.10,
+        0.022 * (dry[i][d] - 10),
+        0.018 * (tmax[i][d] - 24),
+        -0.006 * (rh[i][d] - 62),
+        0.025 * (wind[i][d] - 4.2),
+        0.12 * (human - 0.5),
     ])
     rows.append(comp + rng.normal(0, 0.03, comp.shape))
 comp_all = np.array(rows)  # [week, cell, group]

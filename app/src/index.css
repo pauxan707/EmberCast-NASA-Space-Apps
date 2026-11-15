@@ -149,7 +149,11 @@ select, input[type=date] { background: transparent; border: 1px solid var(--ink)
 
 /* landing */
 .cover { padding: clamp(40px, 6vw, 84px) 0 clamp(28px, 4vw, 48px); overflow: hidden; }
-.cover h1 { margin: 18px 0 24px; max-width: 13ch; } .cover h1 em { color: #f08a4b; font-weight: 400; }
+.cover-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(24px, 4vw, 64px); align-items: center; }
+.globe { margin: 0; width: min(38vw, 520px); }
+.globe canvas { width: 100%; aspect-ratio: 1; display: block; cursor: grab; touch-action: pan-y; } .globe canvas:active { cursor: grabbing; }
+.globe figcaption { margin-top: 6px; text-align: center; color: var(--ink3); font: 400 11px/1.5 var(--mono); }
+.cover h1 { margin: 18px 0 24px; max-width: 12ch; font-size: clamp(40px, 5.6vw, 84px); text-wrap: balance; } .cover h1 em { color: #f08a4b; font-weight: 400; }
 .cover .lead { max-width: 54ch; font-size: clamp(17px, 1.6vw, 21px); }
 .cover .primary { background: #f2ede3; color: #17130f; border-color: #f2ede3; } .cover .primary:hover { background: var(--ember); border-color: var(--ember); color: #fff; }
 .cover-fig { margin-top: clamp(36px, 5vw, 64px); margin-bottom: 0; }
@@ -318,6 +322,7 @@ select, input[type=date] { background: transparent; border: 1px solid var(--ink)
   .ahead { grid-template-columns: repeat(4, minmax(0, 1fr)); } .ahead div:nth-child(n+5) { border-top: 1px dashed var(--hair); }
   .foot-in { flex-direction: column; } .zmap { position: static; max-width: 420px; }
   .week-g { justify-self: start; }
+  .cover-top { grid-template-columns: minmax(0, 1fr); } .globe { display: none; }
 }
 @media (max-width: 560px) {
   .zlist a { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; } .z-n, .z-go { display: none; } .z-act { text-align: left; display: flex; gap: 8px; align-items: baseline; } .z-lvl { min-width: 0; }

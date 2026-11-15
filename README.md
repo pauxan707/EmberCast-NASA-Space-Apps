@@ -2,7 +2,7 @@
 
 **From 25 years of satellite hot spots to a 7-day fire outlook.**
 
-NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS Hot Spots* · Team **Gea & Co.** (Montevideo, Uruguay)
+NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS Hot Spots* · Team **EmberCast** (Montevideo, Uruguay)
 
 **Live demo:** https://pauxan707.github.io/NASA-Space-Apps-Challenge---Harmonization-of-MODIS-and-VIIRS-Hot-Spots/
 
@@ -15,7 +15,7 @@ MODIS and VIIRS have tracked active fires for more than two decades, but their r
 | Fire record (MODIS 2000–2025, VIIRS S-NPP 2012–2025, Uruguay) | **Real NASA FIRMS data**, downloaded from the public country archive |
 | Harmonization (factors, uncertainty band, hold-out validation, same-fire example) | **Real**, computed by `pipeline/03_harmonize.py` |
 | Burn calendar, anomalies, critical period, CSV export, "what happened next" | **Real**, derived from the harmonized record |
-| 7-day risk levels, their reasons, model metrics, feature weights | **Illustrative**: generated with a fixed seed on top of the real record (`pipeline/04_simulated_risk.py`). The trained model is the next step |
+| 7-day risk levels, their reasons, model metrics, feature weights | **Illustrative**: generated with a fixed seed on top of the real record (`pipeline/04_simulated_risk.py`). It only uses information available on the issue date (season and past activity), never what happened afterwards. The trained model is the next step |
 | Cloud "blind days" | **Illustrative** |
 | Alerts | Demo only: nothing is sent, no contact data is requested |
 
@@ -38,7 +38,7 @@ Known limits: it cannot recover small fires MODIS never saw (it estimates them o
 
 ## What the app does
 
-- **Landing**: what it is and who it is for (prevent, plan, respond), over the real 25-year burn calendar.
+- **Landing**: what it is and who it is for (prevent, plan, respond), with a globe of real MODIS detections worldwide from the last 7 days and the real 25-year burn calendar.
 - **Zones**: reports sorted by risk; the dashboard is the answer, not a map.
 - **Report**: level, why, activity vs 25 years, confidence, what to do, links to evidence.
 - **Map**: risk grid, real MODIS / VIIRS detections, harmonized activity, and a "reveal what happened next" replay.
@@ -65,6 +65,7 @@ Rebuild the data (Python 3.10+, `numpy`):
 python pipeline/01_download.py        # FIRMS country archive + department boundaries
 python pipeline/03_harmonize.py       # harmonization -> app/public/data/harmonized.json
 python pipeline/04_simulated_risk.py  # illustrative risk layer -> app/public/data/model.json
+python pipeline/05_globe.py           # landing globe: world outline + global MODIS, last 7 days
 ```
 
 The project name lives in one place: `app/src/config.ts`. All UI copy is in `app/src/i18n.ts`.
@@ -83,6 +84,8 @@ Custom domain (GoDaddy or any registrar): in the repository go to *Settings → 
 **Planned for the real risk model (not loaded in this demo):** NASA POWER (weather), MODIS/VIIRS NDVI and land cover, SMAP soil moisture, Black Marble night lights, GPW population, OpenStreetMap roads and towns.
 
 **Other**
+- [FIRMS active fire text files](https://firms.modaps.eosdis.nasa.gov/active_fire/): MODIS C6.1 global detections of the last 7 days, shown on the landing-page globe (snapshot taken 15 Nov 2026).
+- World land outline: [Natural Earth](https://www.naturalearthdata.com/) 1:110m (public domain).
 - Department boundaries: [geoBoundaries](https://www.geoboundaries.org/) gbOpen URY ADM1 (ODbL, © OpenStreetMap contributors).
 - Fonts: Fraunces, IBM Plex Sans, IBM Plex Mono (SIL Open Font License), via Google Fonts.
 - Software: React, Vite, TypeScript, Python, NumPy.

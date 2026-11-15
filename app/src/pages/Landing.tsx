@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Key } from '../i18n'
 import { quantile, YEARS } from '../data'
+import Globe from '../Globe'
 import { fmtDate, Gauge, LEVELS, ramp, RiskBadge, useApp } from '../ui'
 
 const CW = 4, CH = 12
@@ -48,14 +49,17 @@ export default function Landing({ onTour }: { onTour: () => void }) {
     <>
       <section className="cover plate">
         <div className="wrap cover-top">
-          <span className="eyebrow">{t('l_eyebrow')}</span>
-          <h1>{t('l_h1a')} <em>{t('l_h1b')}</em></h1>
-          <p className="lead">{t('l_lead')}</p>
-          <div className="cta">
-            <a className="primary" href="#/zones">{t('l_cta_zones')} <span>→</span></a>
-            <a className="btn" href="#/planner">{t('l_cta_plan')} <span>→</span></a>
-            <button className="link" onClick={onTour}>▶ {t('watch_demo')}</button>
+          <div>
+            <span className="eyebrow">{t('l_eyebrow')}</span>
+            <h1>{t('l_h1a')} <em>{t('l_h1b')}</em></h1>
+            <p className="lead">{t('l_lead')}</p>
+            <div className="cta">
+              <a className="primary" href="#/zones">{t('l_cta_zones')} <span>→</span></a>
+              <a className="btn" href="#/planner">{t('l_cta_plan')} <span>→</span></a>
+              <button className="link" onClick={onTour}>▶ {t('watch_demo')}</button>
+            </div>
           </div>
+          <Globe />
         </div>
         <figure className="cover-fig wrap">
           <div className="cf-months"><span />{months.map((m) => <b key={m}>{m}</b>)}</div>

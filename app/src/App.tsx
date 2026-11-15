@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CHALLENGE, DEFAULT_REPLAY_DATE, DEFAULT_ZONES, PROJECT_NAME, REPO_URL, TEAM_NAME } from './config'
+import { CHALLENGE, DEFAULT_REPLAY_DATE, DEFAULT_ZONES, PROJECT_NAME, REPO_URL } from './config'
 import { loadDB } from './data'
 import type { DB } from './data'
 import { tr } from './i18n'
@@ -17,7 +17,7 @@ import Planner from './pages/Planner'
 import Alerts from './pages/Alerts'
 
 const NAV: { r: string; k: Key }[] = [
-  { r: '/zones', k: 'nav_zones' }, { r: '/planner', k: 'nav_planner' }, { r: '/map', k: 'nav_map' },
+  { r: '/', k: 'nav_home' }, { r: '/zones', k: 'nav_zones' }, { r: '/planner', k: 'nav_planner' }, { r: '/map', k: 'nav_map' },
   { r: '/calendar', k: 'nav_calendar' }, { r: '/how', k: 'nav_how' },
 ]
 const TOUR: { r: string; k: Key }[] = [
@@ -122,7 +122,7 @@ export default function App() {
       <footer className="foot">
         <div className="wrap foot-in">
           <div>
-            <b>{PROJECT_NAME}</b> · {TEAM_NAME} · NASA Space Apps Challenge 2026 · {CHALLENGE}
+            <b>{PROJECT_NAME}</b> · NASA Space Apps Challenge 2026 · {CHALLENGE}
             <p>{t('foot_1', { date: fmtDate(wk.date, lang) })}</p>
             <p>{t(ctx.simulated ? 'foot_2' : 'foot_2_real')}</p>
             <p>{t('foot_3')}</p>
