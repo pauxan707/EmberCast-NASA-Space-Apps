@@ -1,0 +1,1 @@
+# NASA-Space-Apps-Challenge---Harmonization-of-MODIS-and-VIIRS-Hot-Spots
